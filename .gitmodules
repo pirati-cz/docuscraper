@@ -1,0 +1,3 @@
+[submodule "DokuWiki-to-Markdown-Converter"]
+	path = DokuWiki-to-Markdown-Converter
+	url = ./DokuWiki-to-Markdown-Converter/
