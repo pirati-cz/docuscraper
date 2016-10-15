@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- encoding: utf-8 -*-
+
 import re
 from os import mkdir
 from os.path import join, isdir, isfile
@@ -87,6 +90,13 @@ def scrapper():
         break
     return articles
 
-articles = scrapper()
 
-print("Now we have article in var articles")
+def export_2_cmd(articles):
+    print("Now we have article in var articles, first article:")
+    print(article[0])
+
+def export_2_jekyll():
+    pass
+
+articles = scrapper()
+export_2_cmd(articles)
