@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # -*- encoding: utf-8 -*-
 
+import re
+
 # Settings
 url = {
     'domain': 'https://www.pirati.cz/',
@@ -24,7 +26,9 @@ re_removes = [
     # ![\4](\1)
     #/g' "$file";
 ]
-re_image = r'{{\s*(?P<filename>(?P<name>\w*).jpg)\?[0-9]*\s*}}'
+re_image = r'{{\s*(?P<filename>(?P<name>[\w:_-]*).[jpgpn]*)'
+re_image_md = r'\[(?P<desc>den_tripodu)\]\((?P<filename>den_tripodu.jpg)\)'
+re_header_md = re.compile(r'^\s*#[\w\s:-]*$', re.MULTILINE)
 re_replace = [
     ('~~NOTOC~~', ''),
     ('~~READMORE~~', ''),

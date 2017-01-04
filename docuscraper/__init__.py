@@ -12,6 +12,3 @@ __credits__ = ["Ondřej Profant"]
 __copyright__ = "Copyright 2016, Ondřej Profant"
 __maintainer__ = "Ondřej Profant"
 __email__ = "ondrej.profant@pirati.com"
-
-def main():
-    print("hello")
