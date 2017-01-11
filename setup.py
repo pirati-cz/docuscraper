@@ -7,6 +7,8 @@ from docu-scraper import (__version__, __author__, __email__, __license__, __doc
 
 locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
+REQUIREMENTS = [i.strip() for i in open("requirements.txt").readlines()]
+
 setup(
 	# Basic
 	name='docu-scraper',
@@ -20,7 +22,7 @@ setup(
 	},
 
 	# Requirements
-	install_requires=["wget", "dateutils", "markdown", "ConfigArgParse", "sh" ],
+	install_requires=REQUIREMENTS,
 
 	package_data={
 		'byro': []
