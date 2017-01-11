@@ -26,7 +26,7 @@ re_removes = [
     # ![\4](\1)
     #/g' "$file";
 ]
-re_image = r'{{\s*(?P<filename>(?P<name>[\w:_-]*).[jpgpn]*)'
+re_image = r'{{\s*(?P<all>(?P<filename>(?P<name>[\w:_-]*).[jpgpn])*[?\w&\w]*)\s*|[\w\s_-&?]*}}'
 re_image_md = r'\[(?P<desc>den_tripodu)\]\((?P<filename>den_tripodu.jpg)\)'
 re_header_md = re.compile(r'^\s*#[\w\s:-]*$', re.MULTILINE)
 re_replace = [
