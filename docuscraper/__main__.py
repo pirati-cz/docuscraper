@@ -8,8 +8,8 @@ from .export import *
 
 def main():
     articles = scrapper()
-    #export_2_cmd(articles)
-    #export_2_jekyll(articles)
+    export_2_cmd(articles)
+    export_2_jekyll(articles)
 
 if __name__ == "__main__":
 	sys.exit(main())

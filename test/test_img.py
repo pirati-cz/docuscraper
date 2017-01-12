@@ -3,8 +3,15 @@
 """
 """
 
+import hashlib
 import unittest
+import shutil, tempfile
+from os import path
+from io import StringIO
+from unittest.mock import patch
+
 from docuscraper.scraper import find_main_img_in_text, docu_uri_to_url
+from docuscraper.export import get_image
 
 # test data
 imgs = {
@@ -32,7 +39,12 @@ imgs = {
     'namespace2': ("konference.jpg", "Piráti na tiskové konferenci",
         "regiony:praha:tiskove-zpravy:konference.jpg?300",
         "https://www.pirati.cz/_media/regiony/praha/tiskove-zpravy/konference.jpg",
-        " {{regiony:praha:tiskove-zpravy:konference.jpg?300 |Piráti na tiskové konferenci}} ")
+        " {{regiony:praha:tiskove-zpravy:konference.jpg?300 |Piráti na tiskové konferenci}} "),
+    'fb': ("1452505_10151955999839039_1256076451_n.jpg", "",
+        "https://scontent-a-ams.xx.fbcdn.net/hphotos-frc3/q71/s720x720/1452505_10151955999839039_1256076451_n.jpg",
+        "https://scontent-a-ams.xx.fbcdn.net/hphotos-frc3/q71/s720x720/1452505_10151955999839039_1256076451_n.jpg",
+        "{{https://scontent-a-ams.xx.fbcdn.net/hphotos-frc3/q71/s720x720/1452505_10151955999839039_1256076451_n.jpg?480 |}}"),
+    'no-img': (None, None, None, None, " Zde není obrázek  ")
 }
 ns = 'regiony:praha:tiskove-zpravy'
 
@@ -68,6 +80,19 @@ class Find_img(unittest.TestCase):
         self.assertEqual(imgs['namespace2'][2], uri)
         self.assertEqual(imgs['namespace2'][1], desc)
 
+    @unittest.skip("Non actual link (403)")
+    def test_fb(self):
+        uri, desc, rest = find_main_img_in_text(imgs['fb'][4])
+        self.assertEqual(imgs['fb'][2], uri)
+        self.assertEqual(imgs['fb'][1], desc)
+
+    def test_no_img(self):
+        with patch('sys.stderr', new=StringIO()) as fakeOutput:
+            uri, desc, rest = find_main_img_in_text(imgs['no-img'][4])
+            self.assertIn('ERROR', fakeOutput.getvalue().strip())
+        self.assertEqual(imgs['no-img'][2], uri)
+        self.assertEqual(imgs['no-img'][1], desc)
+
 class Uri_2_url(unittest.TestCase):
 
     def test_url(self):
@@ -99,3 +124,28 @@ class Uri_2_url(unittest.TestCase):
         img_url, img_namespace = docu_uri_to_url(ns, imgs['namespace2'][2])
         self.assertEqual(imgs['namespace2'][3], img_url)
         self.assertEqual(imgs['namespace2'][0], img_namespace)
+
+    @unittest.skip("Non actual link (403)")
+    def test_fb(self):
+        img_url, img_namespace = docu_uri_to_url(ns, imgs['fb'][2])
+        self.assertEqual(imgs['fb'][3], img_url)
+        self.assertEqual(imgs['fb'][0], img_namespace)
+
+class Download(unittest.TestCase):
+
+    def setUp(self):
+        # Create a temporary directory
+        self.test_dir = tempfile.mkdtemp()
+
+    def tearDown(self):
+        # Remove the directory after the test
+        shutil.rmtree(self.test_dir)
+
+    @unittest.skip()
+    def test_download(self):
+        url = imgs['url-wiki'][3]
+        name = imgs['url-wiki'][0]
+        get_image(url, name, dir=self.test_dir)
+        digest1 ='43150ac39cd996c4e267051e567a2edb'
+        digest2 = hashlib.md5(open(join(self.test_dir, name), 'rb').read()).hexdigest()
+        self.assertEqual(digest1, digest2)

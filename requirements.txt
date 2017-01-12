@@ -5,3 +5,4 @@ dateutils
 beautifulsoup4
 ConfigArgParse
 Django
+Wand

@@ -1,8 +1,10 @@
 import re
+import sys
 from os import mkdir
 from os.path import join, isdir, isfile
 from subprocess import call
-from urllib.request import urlopen, urlretrieve
+from urllib.request import urlopen
+from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from unidecode import unidecode
 from django.utils.dateparse import parse_datetime
@@ -37,10 +39,9 @@ def find_main_img_in_text(text):
         res1, text_2 = re.split(r'\s*\}\}', text, maxsplit=1)
         text_1, res2 = re.split(r'\{\{\s*', res1, maxsplit=1)
     except:
-        print("Error", text)
-        exit()
+        print("ERROR find img: %s" % text, file=sys.stderr)
+        return (None, None, text)
     rest = text_1 + text_2
-    print(rest)
     try:
         uri, desc = re.split(r'\s*\|\s*', res2, maxsplit=1)
     except ValueError:
@@ -58,6 +59,7 @@ def docu_uri_to_url(ns, uri):
 
     try:
         # Is standard standalone url?
+        # If link is not actual fail
         urlopen(uri)
         img_url = uri2
     except:
@@ -83,11 +85,12 @@ def get_article(item):
         title_web = webalize_title(title)
         docu = str(urlopen(txt_url).read().decode("utf-8"))
 
-        img_uri, desc, rest = find_main_img_in_text(ns, ns_short, docu)
-        img_url, img_name = docu_uri_to_url(img_uri)
+        img_uri, img_desc, rest = find_main_img_in_text(docu)
+        if img_uri:
+            img_url, img_name = docu_uri_to_url(ns, img_uri)
 
     except Exception as e:
-        print('Přeskakuji %s: %s %s' % (title, txt_url, e))
+        print('ERROR SKIP article %s: %s %s' % (title, txt_url, e), file=sys.stderr)
         raise Exception()
 
     for subs in re_replace:
@@ -100,15 +103,19 @@ def get_article(item):
         'txt_url': txt_url,
         'date': date,
         'content': {
-            'docu': docu,
-            'md': dokuwiki_2_md_convertor(ns_short, title_web, docu)
+            'docu': rest,
+            'md': dokuwiki_2_md_convertor(ns_short, title_web, rest)
         },
-        'img': img_name
+        'img': {
+            'url': img_url,
+            'name': img_name,
+            'desc': img_desc
+        }
     }
 
 def scrapper():
     if not isfile(converter_bin):
-        print('You need DokuWiki-to-Markdown-Converter from %s' % converter_git)
+        print('You need DokuWiki-to-Markdown-Converter from %s' % converter_git, file=sys.stderr)
         call(['git', 'clone', converter_git])
 
     if isdir(ns_short):
@@ -123,16 +130,13 @@ def scrapper():
     else:
         html = urlopen( url['domain'] + url['ns_feed'] + ns )
 
-
     soup = BeautifulSoup( html, "lxml")
     items = soup.find_all('item')
     articles = []
     for item in items:
         try:
             article = get_article(item)
-            break
         except:
-            print()
             continue
         articles.append(article)
     return articles

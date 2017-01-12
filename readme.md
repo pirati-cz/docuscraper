@@ -7,3 +7,9 @@ Scrapuje docu wiki a převádí články do markdownu, ukládá obrázky a zacho
 ```
 python3 -m docuscraper
 ```
+
+Testy:
+
+```
+python3 -m unittest
+```
